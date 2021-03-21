@@ -1,0 +1,1 @@
+console.log("users-service is up and running");
