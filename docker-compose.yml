@@ -2,17 +2,32 @@ version: "3"
 
 services:
 
-  chat-gateway:
+  users-service-db:
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=db
+    image: mysql:5.7.20
+    ports:
+      - "7201:3306"
+
+  chat-service-db:
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=db
+    image: mysql:5.7.20
+    ports:
+      - "7200:3306"
+
+  users-service:
     build:
       context: "."
-      dockerfile: "./APIs/chat-gateway/Dockerfile"
+      dockerfile: "./services/users-service/Dockerfile"
     depends_on: 
-      - chat-service
-      - users-service
+      - users-service-db
     ports:
-      - "7000:7000"
+      - "7101:7101"
     volumes:
-      - ./APIs/chat-gateway:/opt/app
+      - ./services/users-service:/opt/app
 
   chat-service:
     build:
@@ -25,39 +40,24 @@ services:
     volumes:
       - ./services/chat-service:/opt/app
 
-  chat-service-db:
-    environment:
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=db
-    image: mysql:5.7.20
+  chat-gateway:
+    build:
+      context: "."
+      dockerfile: "./APIs/chat-gateway/Dockerfile"
+    depends_on: 
+      - chat-service
+      - users-service
     ports:
-      - "7200:3306"
+      - "7000:7000"
+    volumes:
+      - ./APIs/chat-gateway:/opt/app
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
+    depends_on: 
+      - users-service-db
+      - chat-service-db
     ports:
       - "7300:80"
     volumes:
       - ./tools/phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
- 
-  users-service:
-    build:
-      context: "."
-      dockerfile: "./services/chat-service/Dockerfile"
-    depends_on: 
-      - users-service-db
-    ports:
-      - "7101:7101"
-    volumes:
-      - ./services/users-service:/opt/app
-
-  users-service-db:
-    environment:
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=db
-    image: mysql:5.7.20
-    ports:
-      - "7201:3306"
-
- 
-
