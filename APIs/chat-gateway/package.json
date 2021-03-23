@@ -4,7 +4,7 @@
   "license": "MIT",
 
   "scripts" : {
-    "watch": "ts-node-dev --poll --child-exit --respawn index.dev.ts"
+    "watch": "ts-node-dev --poll --exit-child --respawn index.dev.ts"
   },
 
   "devDependencies": {
