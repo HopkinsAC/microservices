@@ -8,22 +8,27 @@
     "watch": "ts-node-dev --poll --exit-child --respawn index.dev.ts"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
     "@types/config": "^0.0.38",
     "@types/cors": "^2.8.10",
     "@types/express": "^4.17.11",
     "@types/node": "^14.14.35",
+    "@types/uuid": "^8.3.0",
     "module-alias": "^2.2.2",
     "ts-node": "^9.1.1",
     "ts-node-dev": "^1.1.6",
     "typescript": "^4.2.3"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "config": "^3.3.6",
     "cors": "^2.8.5",
+    "dayjs": "^1.10.4",
     "express": "^4.17.1",
     "mysql2": "^2.2.5",
     "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.2.31"
+    "typeorm": "^0.2.31",
+    "uuid": "^8.3.2"
   },
   "_moduleAliases": {
     "#root": "./src"
