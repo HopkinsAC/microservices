@@ -42,15 +42,29 @@ const setupRoutes = (app: Express) => {
 
       const expiresAt = dayjs().add(USER_SESSION_EXPIRY_HOURS, "hours").toISOString()
       const sessionToken = generateUUID();
-      const userSessX = {
+      const userSession = {
         expiresAt,
         id: sessionToken,
         userId: user.id
       };
 
-      await connection.createQueryBuilder().insert().into(UserSession).values([userSessX]).execute();
+      // 2021-03-25T15:46:00 PDT ACH
+      // Had to duplicate this since the call to insert the values into the database
+      // is adding a new field into the object.  Send the session info to the 
+      // database and return the copy of the pre-session info.
+      //
+      const sessionInfo = {
+        expiresAt,
+        id: sessionToken,
+        userId: user.id
+      }
 
-      return res.json(userSessX);
+      await connection.createQueryBuilder().insert().into(UserSession).values([sessionInfo]).execute();
+
+      // 2021-03-25T15:49:00 PDT ACH
+      // Returning only the information needed by the calling post command.
+      //
+      return res.json(userSession);
 
     } catch (err) {
       return next(err);
