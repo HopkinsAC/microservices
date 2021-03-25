@@ -1,5 +1,6 @@
 import config from "config";
 import dayjs from "dayjs";
+import omit from "lodash.omit";
 import { Express } from "express";
 import { getConnection, getRepository } from "typeorm";
 import { NextFunction } from "express";
@@ -7,6 +8,7 @@ import { NextFunction } from "express";
 import User from "#root/db/entities/User";
 import UserSession from "#root/db/entities/UserSession";
 import generateUUID from "#root/helpers/generateUUID";
+import hashPassword from "#root/helpers/hashPassword";
 import passwordCompareSync from "#root/helpers/passwordCompareSync";
 
 
@@ -16,8 +18,9 @@ const USER_SESSION_EXPIRY_HOURS = config.get("USER_SESSION_EXPIRY_HOURS") as num
 const setupRoutes = (app: Express) => {
   const connection = getConnection();
   const userRepository = getRepository(User);
+  const userSessionRepository = getRepository(UserSession);
 
-  // User session handling
+  // User session handling ____________________________________________________
   //
   app.post("/sessions", async (req, res, next) => {
     if (!req.body.username || !req.body.password) {
@@ -48,22 +51,8 @@ const setupRoutes = (app: Express) => {
         userId: user.id
       };
 
-      // 2021-03-25T15:46:00 PDT ACH
-      // Had to duplicate this since the call to insert the values into the database
-      // is adding a new field into the object.  Send the session info to the 
-      // database and return the copy of the pre-session info.
-      //
-      const sessionInfo = {
-        expiresAt,
-        id: sessionToken,
-        userId: user.id
-      }
+      await connection.createQueryBuilder().insert().into(UserSession).values([userSession]).execute();
 
-      await connection.createQueryBuilder().insert().into(UserSession).values([sessionInfo]).execute();
-
-      // 2021-03-25T15:49:00 PDT ACH
-      // Returning only the information needed by the calling post command.
-      //
       return res.json(userSession);
 
     } catch (err) {
@@ -71,8 +60,57 @@ const setupRoutes = (app: Express) => {
     }
   });
 
-  // User handling
+  app.get("/sessions/:sessionId", async (req, res, next) => {
+    try {
+      const userSession = await userSessionRepository.findOne(req.params.sessionId);
+
+      if (!userSession) return next(new Error("Invalid session ID"));
+
+      return res.json(userSession);
+
+    } catch(err) {
+      return next(err);
+    }
+  })
+
+  app.delete("/sessions/:sessionId", async (req, res, next) => {
+    try {
+      const userSession = await userSessionRepository.findOne(req.params.sessionId);
+
+      if (!userSession) return next(new Error("Invalid session ID"));
+
+      await userSessionRepository.remove(userSession);
+
+      return res.end();
+
+    } catch(err) {
+      return next(err);
+    }
+  })
+
+  // User handling ____________________________________________________________
   //
+  app.post("/users", async (req, res, next) => {
+    if (!req.body.username || !req.body.password) {
+      return next(new Error("Invalid body!"));
+    }
+
+    try {
+      const newUser = {
+        id: generateUUID(),
+        username: req.body.username,
+        passwordHash: hashPassword(req.body.password)
+      }
+
+      await connection.createQueryBuilder().insert().into(User).values([newUser]).execute();
+
+      return res.json(omit(newUser, ["passwordHash"]));
+
+    } catch(err) {
+      return next(err);
+    }
+  });
+
   app.get("/users/:userId", async (req, res, next) => {
     try {
       const user = await userRepository.findOne(req.params.userId);
