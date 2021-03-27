@@ -39,7 +39,7 @@ services:
       - "7100:7100"
     volumes:
       - ./services/chat-service:/opt/app
-
+  
   chat-gateway:
     build:
       context: "."

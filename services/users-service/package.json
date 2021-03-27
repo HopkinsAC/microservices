@@ -5,7 +5,7 @@
   "scripts": {
     "db:migrate": "ts-node ./node_modules/typeorm/cli.js migration:run",
     "db:migrate:undo": "ts-node ./node_modules/typeorm/cli.js migration:revert",
-    "watch": "ts-node-dev --poll --exit-child --respawn index.dev.ts"
+    "watch": "ts-node-dev --respawn index.dev.ts"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",

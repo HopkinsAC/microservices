@@ -1,1 +1,3 @@
-console.log("chat-gateway is up and running");
+import startServer from "#root/server/startService";
+
+startServer();
