@@ -3,13 +3,33 @@ import got from "got";
 
 const USERS_SERVICE_URI = config.get("USERS_SERVICE_URI") as string;
 
+export interface User {
+  createdAt: string,
+  id: string,
+  username: string
+}
+
+
+export interface UserSession {
+  createdAt: string,
+  expiresAt: string,
+  id: string,
+  userId: string
+}
 
 export default class UsersService {
 
-  static async fetchUserSession({ sessionId }: { sessionId: string }) {
+  static async fetchUser({ userId }: { userId: string }) : Promise<User | null> {
+    const body = await got.get(`${USERS_SERVICE_URI}/users/${userId}`).json();
+    if (!body) return null;
+
+    return body as User;
+  }
+
+  static async fetchUserSession({ sessionId }: { sessionId: string }) : Promise<UserSession | null> {
     const body = await got.get(`${USERS_SERVICE_URI}/sessions/${sessionId}`).json();
     if (!body) return null;
 
-    return body;
+    return body as UserSession;
   }
 }
