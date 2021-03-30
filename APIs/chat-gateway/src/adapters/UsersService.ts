@@ -9,7 +9,6 @@ export interface User {
   username: string
 }
 
-
 export interface UserSession {
   createdAt: string,
   expiresAt: string,
@@ -18,6 +17,23 @@ export interface UserSession {
 }
 
 export default class UsersService {
+
+  static async createUser({ password, username }: { password: string; username: string }) {
+    const body = await got.post(`${USERS_SERVICE_URI}/users`, { json: { password, username } }).json();
+    return body;
+  }
+
+  static async createUserSession({ password, username }: { password: string; username: string }) {
+    const body = <UserSession> await got.post(`${USERS_SERVICE_URI}/sessions`, { json: { password, username } }).json();
+    return body; 
+  }
+
+  static async deleteUserSession({ sessionId }: { sessionId: string }) {
+    const body = await got.delete(`${USERS_SERVICE_URI}/sessions/${sessionId}`).json();
+    return body; 
+  }
+
+
 
   static async fetchUser({ userId }: { userId: string }) : Promise<User | null> {
     const body = await got.get(`${USERS_SERVICE_URI}/users/${userId}`).json();
